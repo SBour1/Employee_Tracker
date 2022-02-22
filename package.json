@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "express": "^4.17.3",
-    "inquirer": "^8.2.0"
+    "inquirer": "^8.2.0",
+    "mysql2": "^2.2.5",
+    "console.table": "^0.10.0"
   }
 }
