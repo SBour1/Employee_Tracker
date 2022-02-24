@@ -73,19 +73,20 @@ function viewEmployees() {
             function (err, result) {
                 if (err) throw err;
                 console.table(result);
+                init();
             });
     })
-    init();
 };
 
 function viewRoles() {
     db.connect(function (err) {
         if (err) throw err;
-        db.query("SELECT role.title, role.id, role.salary, department.name AS department FROM role LEFT JOIN department ON role.department_id = department.id;", 
-        function (err, result) {
-            if (err) throw err;
-            console.table(result);
-        });
+        db.query("SELECT role.title, role.id, role.salary, department.name AS department FROM role LEFT JOIN department ON role.department_id = department.id;",
+            function (err, result) {
+                if (err) throw err;
+                console.table(result);
+                init();
+            });
     })
 }
 
@@ -95,6 +96,7 @@ function viewDept() {
         db.query("SELECT department.name, department.id FROM department;", function (err, result) {
             if (err) throw err;
             console.table(result);
+            init();
         });
     });
 };
@@ -108,7 +110,7 @@ function updateEmp() {
             if (err) throw err;
             empArr.push(JSON.stringify(result));
         })
-        db.query("SELECT role.name, role.id FROM role", function(err, result) {
+        db.query("SELECT role.name, role.id FROM role", function (err, result) {
             if (err) throw err;
             roleArr.push(JSON.stringify(result))
         })
@@ -127,14 +129,14 @@ function updateEmp() {
             choices: roleArr
         }
     ]).then(data => {
-    db.connect(function (err) {
-        if (err) throw err;
-        db.query(`UPDATE employee SET role_id = ${data.updateRole} WHERE id = ${data.updatePick}`, function (err, result) {
+        db.connect(function (err) {
             if (err) throw err;
-            console.table(result);
-        })
-    });
-})
+            db.query(`UPDATE employee SET role_id = ${data.updateRole} WHERE id = ${data.updatePick}`, function (err, result) {
+                if (err) throw err;
+                console.table(result);
+            })
+        });
+    })
 }
 
 function addEmp() {
@@ -142,9 +144,49 @@ function addEmp() {
 }
 
 function addRole() {
+    db.query("SELECT role.title AS Title, role.salary AS Salary FROM role", function(res, err) {
+        inquirer.prompt([
+            {
+                name: "Title",
+                type: "input",
+                message: "What is the Title for the new role?"
+            },
+            {
+                name: "Salary",
+                type: "input",
+                message: "What is the Salary for the new role?"
+            }
+        ]).then(function(res) {
+            db.query("INSERT INTO role SET ?", {
+                title: res.Title,
+                salary: res.Salary
+            }, function(err) {
+                if (err) throw err
+                console.table(res)
+                init()
+            })
+        })
+    })
 
 }
 
 function addDept() {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "name",
+            message: "What is the name of the Department you would like to add?"
+        }
+    ]).then(function (res) {
+        db.query("INSERT INTO department SET ?", {
+            name: res.name
+            },
+            function (err) {
+                if (err) throw err
+                console.table(res);
+                init();
+            })
+        }
+    )
 
 }
