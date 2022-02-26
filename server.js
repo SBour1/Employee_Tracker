@@ -114,10 +114,10 @@ function selectRole() {
 
 var managerArr = [];
 function selectManager() {
-    db.query("SELECT first_name, last_name FROM employee WHERE manager_id IS NULL", (err, result) => {
+    db.query("SELECT id, first_name, last_name FROM employee WHERE manager_id IS NULL", (err, result) => {
         if (err) throw err;
         for (let i = 0; i < result.length; i++) {
-            managerArr.push(result[i].first_name + " " + result[i].last_name)
+            managerArr.push(result[i].id + ' ' + result[i].first_name + " " + result[i].last_name)
         };
     })
     return managerArr;
@@ -131,7 +131,7 @@ function updateEmp() {
             console.table(result);
             inquirer.prompt([
                 {
-                    type: "rawlist",
+                    type: "list",
                     message: "Select Employee to update",
                     name: "lastName",
                     choices: function () {
@@ -143,19 +143,13 @@ function updateEmp() {
                     }
                 },
                 {
-                    type: "rawlist",
+                    type: "list",
                     message: "Select the new role for this employee",
                     name: "role",
                     choices: selectRole()
                 }
             ]).then(data => {
-                db.query("UPDATE employee SET WHERE ?",
-                    {
-                        last_name: data.lastName
-                    },
-                    {
-                        role_id: selectRole().indexOf(data.role) + 1
-                    },
+                db.query(`UPDATE employee SET role_id = ${selectRole().indexOf(data.role) + 1} WHERE last_name = "${data.lastName}"`,
                     function (err) {
                         if (err) throw err;
                         console.table(data)
@@ -188,19 +182,17 @@ function addEmp() {
             },
             {
                 name: "choice",
-                type: "rawlist",
+                type: "list",
                 message: "Whats their managers name?",
                 choices: selectManager()
             }
         ]).then(data => {
-            var roleId = selectRole().indexOf(data.role) + 1
-            var managerId = selectManager().indexOf(data.choice) + 1
             db.query("INSERT INTO employee SET ?",
                 {
                     first_name: data.firstname,
                     last_name: data.lastname,
-                    manager_id: managerId,
-                    role_id: roleId
+                    manager_id: selectManager().indexOf(data.choice) + 1,
+                    role_id: selectRole().indexOf(data.role) + 1
 
                 }, function (err) {
                     if (err) throw err
